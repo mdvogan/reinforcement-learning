@@ -1,16 +1,13 @@
 import numpy as np
 
-def bandit_simulation(n_arms,
-                      agent,
-                      testbed_obj,
-                      testbed_param_fun,
+def bandit_simulation(agent,
+                      testbed,
                       time_steps = 1000,
                       epochs = 10):
     """
     :n_arms: number of arms
     :param agent:
-    :param testbed_obj:
-    :param testbed_param_fun
+    :param testbed:
     :param time_steps:
     :param epochs:
     :return:
@@ -20,12 +17,11 @@ def bandit_simulation(n_arms,
     action_log = np.empty((epochs, time_steps, 3))
 
     for e in range(epochs):
-        print(f"Running Epoch: {e}")
         agent.reset_agent()
+        testbed.reset_testbed()
 
-
-        testbed_means, testbed_vars = testbed_param_fun(n_arms)
-        testbed = testbed_obj(len(testbed_means), testbed_means, testbed_vars)
+        testbed_means = testbed.means
+        testbed_vars = testbed.variances
         testbed_log[e] = {'means': testbed_means,
                         'vars': testbed_vars,
                         'optimal_action': testbed.optimal_action}

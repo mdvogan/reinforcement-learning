@@ -30,3 +30,13 @@ class SimpleBandit(object):
         self.lifetime_reward = 0
         self.rewards = self.rewards_init.copy()
 
+class ExponentialBandit(SimpleBandit):
+    def __init__(self, n_actions, rewards, epsilon, alpha=0.1):
+        SimpleBandit.__init__(self, n_actions, rewards, epsilon)
+        self.alpha = alpha
+
+    def update_reward(self, action, reward):
+        self.rewards[action] = self.rewards[action] + self.alpha * (
+            reward - self.rewards[action])
+        self.lifetime_reward += reward
+        return None
