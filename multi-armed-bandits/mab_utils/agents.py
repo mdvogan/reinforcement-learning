@@ -6,6 +6,7 @@ class SimpleBandit(object):
         self.action_steps = np.zeros(n_actions)
         self.epsilon = epsilon
         self.rewards = rewards
+        self.rewards_init = rewards.copy()
         self.lifetime_reward = 0
 
     def choose_action(self):
@@ -23,3 +24,9 @@ class SimpleBandit(object):
             reward - self.rewards[action])
         self.lifetime_reward += reward
         return None
+
+    def reset_agent(self):
+        self.action_steps = np.zeros(self.n_actions)
+        self.lifetime_reward = 0
+        self.rewards = self.rewards_init.copy()
+
