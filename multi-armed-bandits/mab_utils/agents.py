@@ -40,3 +40,31 @@ class ExponentialBandit(SimpleBandit):
             reward - self.rewards[action])
         self.lifetime_reward += reward
         return None
+
+class UcbBandit(SimpleBandit):
+    def __init__(self, n_actions, rewards, c):
+        super().__init__(n_actions, rewards, epsilon=0)  # epsilon unused, so set to 0
+        self.c = c
+        self.t = 0  # total step counter
+
+    def choose_action(self):
+        self.t += 1
+
+        zero_actions = np.where(self.action_steps == 0)[0]
+
+        if len(zero_actions) > 0:
+            action = np.random.choice(zero_actions)
+            self.action_steps[action] += 1
+
+        else:
+            confidence_adj_rewards = self.rewards + self.c * (np.sqrt(np.log(self.t)/self.action_steps))
+            action = np.argmax(confidence_adj_rewards)
+            self.action_steps[action] += 1
+
+        return action
+
+    def reset_agent(self):
+        self.action_steps = np.zeros(self.n_actions)
+        self.lifetime_reward = 0
+        self.rewards = self.rewards_init.copy()
+        self.t = 0
