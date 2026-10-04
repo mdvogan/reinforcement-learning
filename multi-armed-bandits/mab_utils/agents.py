@@ -68,3 +68,49 @@ class UcbBandit(SimpleBandit):
         self.lifetime_reward = 0
         self.rewards = self.rewards_init.copy()
         self.t = 0
+
+class GradientBandit(SimpleBandit):
+    def __init__(self, n_actions, rewards, preferences, alpha=0.1):
+        super().__init__(n_actions, rewards, epsilon=0)  # epsilon unused, so set to 0
+        self.preferences = preferences
+        self.preferences_init = preferences.copy()
+        self.alpha = alpha
+
+    def softmax(self):
+        return np.exp(self.preferences)/np.sum(np.exp(self.preferences))
+
+    def choose_action(self):
+        action = np.argmax(self.preferences)
+        self.action_steps[action] += 1
+
+        return action
+
+    def update_preferences(self, action, reward):
+        probs = self.softmax()
+
+        for a in range(self.n_actions):
+            if a == action:
+                self.preferences[a] = self.preferences[a] + self.alpha * (
+                        reward - self.rewards[a]) * (1 - probs[a]
+                )
+
+            else:
+                self.preferences[a] = self.preferences[a] - self.alpha * (
+                        reward - self.rewards[a]) * probs[a]
+        return None
+
+    def update_reward(self, action, reward):
+        self.rewards[action] = self.rewards[action] + (1 / self.action_steps[action]) * (
+                reward - self.rewards[action])
+        self.lifetime_reward += reward
+
+        # Update preferences. Need to update sim tools to remove update_reward call to abstract this
+        self.update_preferences(action, reward)
+
+        return None
+
+    def reset_agent(self):
+        self.action_steps = np.zeros(self.n_actions)
+        self.lifetime_reward = 0
+        self.rewards = self.rewards_init.copy()
+        self.preferences = self.preferences_init.copy()
